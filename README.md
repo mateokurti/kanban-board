@@ -1,50 +1,86 @@
 # Next.js Kanban Task Manager
 
-This project is a Next.js (App Router) application implementing a Task/To-Do Manager with a Kanban board. It includes a MongoDB backend using Mongoose, full CRUD API routes, and a simple React UI.
+This is a small Next.js (App Router) project implementing a Task/To‑Do manager with a Kanban board UI and a MongoDB backend (via Mongoose).
 
-## Features
-- Mongoose-powered `Task` model (title, description, status, priority, timestamps)
-- API routes under `/app/api/tasks` implementing POST/GET and `/app/api/tasks/[id]` for PUT/DELETE
-- Client-side components: `TaskForm`, `TaskList`, `KanbanBoard`
-- Simple fetch wrapper in `lib/api/tasks.js`
+Purpose
+- Demo app showing a full-stack Next.js App Router setup: route handlers, Mongoose models, client components, and a Kanban UI.
 
-## Setup
+Key features
+- Mongoose `Task` model: `title`, `description`, `status`, `priority`, `createdAt`, `updatedAt`.
+- API routes under `app/api/tasks` supporting full CRUD.
+- Client components: `TaskForm`, `TaskList`, `KanbanBoard`.
+- Small client API wrapper in `lib/api/tasks.js`.
 
+Quickstart (development)
 1. Install dependencies
 
-PowerShell:
+PowerShell
 ```
 cd "c:\Users\User\Desktop\Andri\spms"
 npm install
 ```
 
-2. Add environment variable
+2. Environment
 
-Create a file named `.env.local` in the project root with the following content:
+Create `.env.local` in the project root and set your MongoDB connection string. Example for a local MongoDB container or local server:
 
 ```
-MONGODB_URI="your-mongodb-connection-string"
+MONGODB_URI="mongodb://localhost:27017/kanban"
 ```
 
-Use a MongoDB connection string (Atlas or local). Example local: `mongodb://localhost:27017/kanban`.
+If you run Mongo in Docker Compose (recommended for reproducible local dev), see the `docker-compose.yml` in the repository — the `web` service expects `MONGODB_URI=mongodb://mongo:27017/kanban` by default.
 
-3. Run the development server
+3. Run dev server
 
-PowerShell:
+PowerShell
 ```
 npm run dev
 ```
+Open http://localhost:3000
 
-Open http://localhost:3000 in your browser.
+Docker (local)
+- To run MongoDB + the web service via Docker Compose (development mode, code mounted):
 
-## Project structure
+PowerShell
+```
+cd "c:\Users\User\Desktop\Andri\spms"
+docker compose up -d
+```
 
-- `app/` - Next.js App Router pages and API routes
-- `components/` - React client components
-- `lib/db.js` - Mongoose connection helper
-- `lib/models/Task.js` - Task schema
-- `lib/api/tasks.js` - client fetch wrapper
+The compose file includes a `mongo` service and a `web` service. The `web` service mounts the project and runs `npm run dev`.
 
-## Notes
-- Ensure `MONGODB_URI` is set before starting the app. The DB helper caches the connection to avoid reinitializing on hot reload.
-- The Kanban board uses simple buttons to move tasks between columns (PUT request updates status).
+API examples
+- List tasks:
+```
+GET http://localhost:3000/api/tasks
+```
+- Create task (JSON):
+```
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+Body: { "title": "My task", "description": "Details", "priority": "high" }
+```
+- Update task:
+```
+PUT http://localhost:3000/api/tasks/<id>
+Body: { "status": "in-progress" }
+```
+- Delete task:
+```
+DELETE http://localhost:3000/api/tasks/<id>
+```
+
+Development notes
+- The Mongoose connection is centralized in `lib/db.js` and caches the connection on `globalThis` to avoid creating many connections during Next.js hot reload.
+- The Task schema is at `lib/models/Task.js`.
+- Kanban board moves tasks by updating the `status` field via the API.
+
+Security & deployment
+- Do not commit `.env.local` or any secrets. Use environment variables on your deployment platform.
+- For production, use a production-ready Node image and a multi-stage Dockerfile. Enable Mongo auth and secure credentials.
+
+Contributing
+- Open an issue or submit a pull request. Add tests where appropriate.
+
+License
+- This project is provided under the MIT License — see `LICENSE`.

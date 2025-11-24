@@ -26,20 +26,107 @@ export default function TaskForm({ onCreated }){
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{marginBottom:12}}>
-      <div className="form-row">
-        <input className="input" placeholder="Task title" value={title} onChange={e=>setTitle(e.target.value)} />
-        <select className="input" value={priority} onChange={e=>setPriority(e.target.value)}>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <button className="btn" disabled={loading}>{loading? 'Adding...' : 'Add'}</button>
-      </div>
-      <div style={{marginTop:8}}>
-        <textarea className="input" rows={2} placeholder="Description (optional)" value={description} onChange={e=>setDescription(e.target.value)} />
-      </div>
-      {error && <div style={{color:'salmon',marginTop:8}}>{error}</div>}
-    </form>
+    <div style={{
+      background: 'var(--jira-bg-card)',
+      border: '2px solid var(--jira-border)',
+      borderRadius: '3px',
+      padding: '16px',
+      marginBottom: '24px',
+      boxShadow: 'var(--shadow-sm)'
+    }}>
+      <h2 style={{
+        fontSize: '16px',
+        fontWeight: '600',
+        margin: '0 0 16px 0',
+        color: 'var(--jira-text-primary)'
+      }}>
+        Create Issue
+      </h2>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          marginBottom: '12px'
+        }}>
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: 'var(--jira-text-secondary)',
+              marginBottom: '4px'
+            }}>
+              Summary *
+            </label>
+            <input
+              className="input"
+              placeholder="What needs to be done?"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: 'var(--jira-text-secondary)',
+              marginBottom: '4px'
+            }}>
+              Description
+            </label>
+            <textarea
+              className="input"
+              rows={3}
+              placeholder="Add more details..."
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--jira-text-secondary)',
+                marginBottom: '4px'
+              }}>
+                Priority
+              </label>
+              <select
+                className="input"
+                value={priority}
+                onChange={e => setPriority(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              className="btn"
+              disabled={loading}
+              style={{
+                minWidth: '100px'
+              }}
+            >
+              {loading ? 'Creating...' : 'Create'}
+            </button>
+          </div>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+      </form>
+    </div>
   )
 }

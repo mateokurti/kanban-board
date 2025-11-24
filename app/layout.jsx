@@ -1,19 +1,21 @@
-import './globals.css'
+import "./globals.css";            
+import Providers from "./providers";
+import Navbar from "../components/Navbar";
 
 export const metadata = {
-  title: 'Kanban Tasks',
-  description: 'Task/To-Do Manager with Kanban Board'
-}
+  title: "Kanban Task Manager",
+  description: "A simple task management app with authentication",
+};
 
-export default function RootLayout({ children }){
+export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en"> 
       <body>
-        <div className="container">
-          <h1 style={{marginBottom:12}}>Kanban Task Manager</h1>
+        <Providers>
+          <Navbar />
           {children}
-        </div>
+        </Providers>
       </body>
     </html>
-  )
+  );
 }

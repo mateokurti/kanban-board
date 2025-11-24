@@ -1,44 +1,65 @@
-import { NextResponse } from 'next/server'
-import dbConnect from '../../../lib/db'
-import Task from '../../../lib/models/Task'
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/db';
+import Task from '@/lib/models/Task';
+import { requireAuth } from '@/lib/auth';
 
-export async function GET(request){
-  try{
-    await dbConnect()
-    const url = new URL(request.url)
-    const status = url.searchParams.get('status')
-    const priority = url.searchParams.get('priority')
-    const filter = {}
-    if (status) filter.status = status
-    if (priority) filter.priority = priority
+// GET all tasks for the authenticated user
+export async function GET() {
+  try {
+    const session = await requireAuth();
+    await dbConnect();
 
-    const tasks = await Task.find(filter).sort({ createdAt: -1 }).lean()
-    return NextResponse.json(tasks)
-  }catch(err){
-    console.error(err)
-    return NextResponse.json({ message: 'Failed to fetch tasks' }, { status: 500 })
+    const tasks = await Task.find({ userId: session.user.id }).sort({ createdAt: -1 });
+
+    return NextResponse.json({ tasks }, { status: 200 });
+  } catch (error) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    console.error('Error fetching tasks:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch tasks' },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request){
-  try{
-    await dbConnect()
-    const body = await request.json()
-    if (!body || !body.title || typeof body.title !== 'string' || body.title.trim() === ''){
-      return NextResponse.json({ message: 'Title is required' }, { status: 400 })
+// POST create a new task
+export async function POST(request) {
+  try {
+    const session = await requireAuth();
+    const body = await request.json();
+
+    const { title, description, status, priority } = body;
+
+    if (!title) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      );
     }
 
-    const payload = {
-      title: body.title.trim(),
-      description: body.description || '',
-      priority: ['low','medium','high'].includes(body.priority) ? body.priority : 'medium',
-      status: ['todo','in-progress','done'].includes(body.status) ? body.status : 'todo'
+    await dbConnect();
+
+    const task = await Task.create({
+      title,
+      description,
+      status: status || 'todo',
+      priority: priority || 'medium',
+      userId: session.user.id,
+    });
+
+    return NextResponse.json({ task }, { status: 201 });
+  } catch (error) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const task = await Task.create(payload)
-    return NextResponse.json(task, { status: 201 })
-  }catch(err){
-    console.error(err)
-    return NextResponse.json({ message: 'Failed to create task' }, { status: 500 })
+    console.error('Error creating task:', error);
+    return NextResponse.json(
+      { error: 'Failed to create task' },
+      { status: 500 }
+    );
   }
 }
