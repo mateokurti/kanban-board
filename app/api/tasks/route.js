@@ -31,7 +31,7 @@ export async function POST(request) {
     const session = await requireAuth();
     const body = await request.json();
 
-    const { title, description, status, priority } = body;
+    const { title, description, status, priority, teamId } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(request) {
       description,
       status: status || 'todo',
       priority: priority || 'medium',
+      teamId: teamId || null,
       userId: session.user.id,
     });
 

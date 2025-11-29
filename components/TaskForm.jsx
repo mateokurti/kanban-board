@@ -12,17 +12,27 @@ export default function TaskForm({ onCreated }){
   async function handleSubmit(e){
     e.preventDefault()
     setError(null)
-    if (!title.trim()) return setError('Title is required')
+    if (!title.trim()) {
+      setError('Title is required')
+      return
+    }
     setLoading(true)
     try{
+      console.log('Creating task with payload:', { title, description, priority, status: 'todo' })
       const created = await createTask({ title, description, priority, status: 'todo' })
+      console.log('Task created successfully:', created)
       setTitle('')
       setDescription('')
       setPriority('medium')
-      if (onCreated) onCreated(created)
+      if (onCreated) {
+        await onCreated(created)
+      }
     }catch(err){
-      setError(err.message)
-    }finally{setLoading(false)}
+      console.error('Error creating task:', err)
+      setError(err.message || 'Failed to create task. Please try again.')
+    }finally{
+      setLoading(false)
+    }
   }
 
   return (

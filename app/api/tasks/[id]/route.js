@@ -55,7 +55,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    const allowedFields = ['title', 'description', 'status', 'priority'];
+    const allowedFields = ['title', 'description', 'status', 'priority', 'scheduled', 'teamId'];
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {
         task[field] = body[field];
