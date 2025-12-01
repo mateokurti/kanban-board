@@ -1,12 +1,15 @@
 "use client";
-import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { getProjects } from "../../lib/api/projects";
 import { createTask } from "../../lib/api/tasks";
+import { getTeams } from "../../lib/api/teams";
 
 export default function NewTaskPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const teamId = searchParams.get("team");
+  const initialTeamParam = searchParams.get("team") || "";
+  const initialProjectParam = searchParams.get("project") || "";
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -14,6 +17,76 @@ export default function NewTaskPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
+  const [teams, setTeams] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(initialTeamParam);
+  const [selectedProject, setSelectedProject] = useState(initialProjectParam);
+  const [metaLoading, setMetaLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCollections() {
+      setMetaLoading(true);
+      try {
+        const [teamsData, projectsData] = await Promise.all([getTeams(), getProjects()]);
+        if (cancelled) return;
+        setTeams(teamsData);
+        setProjects(projectsData);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Failed to load teams or projects");
+        }
+      } finally {
+        if (!cancelled) {
+          setMetaLoading(false);
+        }
+      }
+    }
+
+    loadCollections();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedTeam) return;
+    if (!teams.some((team) => team._id === selectedTeam)) {
+      setSelectedTeam("");
+    }
+  }, [selectedTeam, teams]);
+
+  useEffect(() => {
+    if (!selectedProject) return;
+    const project = projects.find((item) => item._id === selectedProject);
+    if (!project) {
+      setSelectedProject("");
+      return;
+    }
+    if (!selectedTeam) {
+      if ((project.teamIds || []).length === 1) {
+        setSelectedTeam(project.teamIds[0]);
+        return;
+      }
+      if ((project.teamIds || []).length > 0) {
+        setSelectedProject("");
+      }
+      return;
+    }
+    if (project.teamIds?.length && !project.teamIds.includes(selectedTeam)) {
+      setSelectedProject("");
+    }
+  }, [selectedProject, projects, selectedTeam]);
+
+  const availableProjects = useMemo(() => {
+    if (!selectedTeam) {
+      return projects.filter((project) => (project.teamIds || []).length === 0);
+    }
+    return projects.filter((project) => {
+      const ids = Array.isArray(project.teamIds) ? project.teamIds : [];
+      return ids.length === 0 || ids.includes(selectedTeam);
+    });
+  }, [projects, selectedTeam]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,7 +102,8 @@ export default function NewTaskPage() {
         description,
         priority,
         status: "todo",
-        teamId: teamId || null
+        teamId: selectedTeam || null,
+        projectId: selectedProject || null
       });
       router.push("/");
     } catch (err) {
@@ -203,35 +277,13 @@ export default function NewTaskPage() {
                         top: "calc(100% + 4px)",
                         left: "0",
                         width: "100%",
-                        background: "var(--jira-bg-card)",
+                        background: "wheat",
                         border: "1px solid var(--jira-border)",
                         borderRadius: "3px",
                         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
                         zIndex: 1000,
                       }}
                     >
-                      <div
-                        style={{
-                          padding: "8px",
-                          borderBottom: "1px solid var(--jira-border)",
-                        }}
-                      >
-                        <input
-                          type="text"
-                          placeholder="Find Priorities..."
-                          style={{
-                            width: "100%",
-                            padding: "6px 8px",
-                            fontSize: "13px",
-                            background: "var(--jira-bg-main)",
-                            border: "1px solid var(--jira-border)",
-                            borderRadius: "3px",
-                            color: "var(--jira-text-primary)",
-                            outline: "none",
-                          }}
-                        />
-                      </div>
-
                       <div style={{ padding: "4px 0" }}>
                         {["high", "medium", "low"].map((p) => (
                           <div
@@ -287,6 +339,91 @@ export default function NewTaskPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Team Field */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "var(--jira-text-primary)",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Team
+                </label>
+                <select
+                  className="input"
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">Unassigned</option>
+                  {teams.map((team) => (
+                    <option key={team._id} value={team._id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Project Field */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "var(--jira-text-primary)",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Project (optional)
+                </label>
+                <select
+                  className="input"
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  style={{
+                    width: "100%",
+                    fontSize: "14px",
+                  }}
+                  disabled={metaLoading}
+                >
+                  <option value="">Unassigned</option>
+                  {availableProjects.map((project) => (
+                    <option key={project._id} value={project._id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedTeam && availableProjects.length === 0 && (
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--jira-text-secondary)",
+                      marginTop: "6px",
+                    }}
+                  >
+                    No projects for this team yet.
+                  </div>
+                )}
+                {!selectedTeam && availableProjects.length === 0 && projects.length > 0 && (
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--jira-text-secondary)",
+                      marginTop: "6px",
+                    }}
+                  >
+                    Select a team to see its projects.
+                  </div>
+                )}
               </div>
 
               {/* Error Message */}
