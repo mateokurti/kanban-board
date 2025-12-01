@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,8 +35,8 @@ export default function Page() {
     }
   }, [session?.user?.email]);
 
-  const fetchTasks = useCallback(async () => {
-    setLoading(true);
+  const fetchTasks = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await getTasks();
       setTasks(Array.isArray(data) ? data : []);
@@ -46,12 +45,19 @@ export default function Page() {
       setError(err.message);
       setTasks([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchTasks();
+
+    // Background sync every 10 seconds (silent, no loading state)
+    const interval = setInterval(() => {
+      fetchTasks(true);
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [fetchTasks]);
 
   const handleSearch = (query) => {
@@ -91,7 +97,8 @@ export default function Page() {
     if (!searchQuery || searchQuery.trim() === "") return true;
     const query = searchQuery.toLowerCase().trim();
     const titleMatch = task.title && task.title.toLowerCase().includes(query);
-    const descMatch = task.description && task.description.toLowerCase().includes(query);
+    const descMatch =
+      task.description && task.description.toLowerCase().includes(query);
     return titleMatch || descMatch;
   });
 

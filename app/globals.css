@@ -1357,6 +1357,27 @@ body {
   margin-top: -28px;
 }
 
+/* Drag and Drop Styles */
+.task-card-dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  transform: rotate(2deg);
+}
+
+.kanban-column-over {
+  background: #f0f7ff !important;
+  border: 2px dashed #0052cc !important;
+  transition: all 0.2s ease;
+}
+
+.task-card-new {
+  cursor: grab;
+}
+
+.task-card-new:active {
+  cursor: grabbing;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
