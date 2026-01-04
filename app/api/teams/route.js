@@ -9,6 +9,13 @@ function serializeTeam(doc) {
     ...team,
     _id: team._id.toString(),
     userId: team.userId.toString(),
+    members: team.members?.map((m) => ({
+      userId: m.userId?._id?.toString() || m.userId?.toString() || m.userId,
+      name: m.userId?.name,
+      email: m.userId?.email,
+      role: m.role || 'Member',
+      addedAt: m.addedAt?.toISOString?.() || m.addedAt,
+    })) || [],
     createdAt: team.createdAt?.toISOString?.() || team.createdAt,
     updatedAt: team.updatedAt?.toISOString?.() || team.updatedAt,
   };
@@ -19,7 +26,9 @@ export async function GET() {
     const session = await requireAuth();
     await dbConnect();
 
-    const teams = await Team.find({ userId: session.user.id }).sort({ name: 1 });
+    const teams = await Team.find({ userId: session.user.id })
+      .populate('members.userId', 'name email')
+      .sort({ name: 1 });
     return NextResponse.json({ teams: teams.map(serializeTeam) }, { status: 200 });
   } catch (error) {
     if (error.message === 'Unauthorized') {

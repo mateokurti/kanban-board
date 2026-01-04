@@ -20,7 +20,6 @@ export default function Page() {
   const [activeProject, setActiveProject] = useState(null);
   const [priorityFilter, setPriorityFilter] = useState([]);
 
-  // Load active team from localStorage on mount or when user changes
   useEffect(() => {
     if (!session?.user?.email) {
       setActiveTeam(null);
@@ -53,7 +52,6 @@ export default function Page() {
   useEffect(() => {
     fetchTasks();
 
-    // Background sync every 10 seconds (silent, no loading state)
     const interval = setInterval(() => {
       fetchTasks(true);
     }, 10000);
@@ -157,7 +155,6 @@ export default function Page() {
           )}
         </div>
 
-        {/* Mobile Bottom Navigation */}
         <div className="mobile-bottom-nav">
           <div className="mobile-nav-items">
             <button className="mobile-nav-item">

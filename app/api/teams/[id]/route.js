@@ -12,6 +12,13 @@ function serializeTeam(doc) {
     ...team,
     _id: team._id.toString(),
     userId: team.userId.toString(),
+    members: team.members?.map((m) => ({
+      userId: m.userId?._id?.toString() || m.userId?.toString() || m.userId,
+      name: m.userId?.name,
+      email: m.userId?.email,
+      role: m.role || 'Member',
+      addedAt: m.addedAt?.toISOString?.() || m.addedAt,
+    })) || [],
     createdAt: team.createdAt?.toISOString?.() || team.createdAt,
     updatedAt: team.updatedAt?.toISOString?.() || team.updatedAt,
   };
@@ -22,7 +29,7 @@ async function findTeamOr404(id, userId) {
     return { error: 'Invalid team ID', status: 400 };
   }
   await dbConnect();
-  const team = await Team.findOne({ _id: id, userId });
+  const team = await Team.findOne({ _id: id, userId }).populate('members.userId', 'name email');
   if (!team) {
     return { error: 'Team not found', status: 404 };
   }

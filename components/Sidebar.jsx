@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createProject, deleteProject, getProjects } from "../lib/api/projects";
 import { createTeam, deleteTeam, getTeams } from "../lib/api/teams";
+import TeamInfoModal from "./TeamInfoModal";
+import TeamMembersModal from "./TeamMembersModal";
 
 export const SHOW_ALL_TEAMS = "__SHOW_ALL_TEAMS__";
 const UNASSIGNED_SENTINEL = "__UNASSIGNED_TEAM__";
@@ -42,6 +44,8 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
   const [hydrated, setHydrated] = useState(false);
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [selectedTeamForInfo, setSelectedTeamForInfo] = useState(null);
+  const [selectedTeamForAddMember, setSelectedTeamForAddMember] = useState(null);
 
   const fetchCollections = useCallback(
     async ({ silent } = { silent: false }) => {
@@ -278,6 +282,12 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
     );
   };
 
+  const handleTeamUpdate = (updatedTeam) => {
+    setTeams((prev) =>
+      prev.map((team) => (team._id === updatedTeam._id ? updatedTeam : team))
+    );
+  };
+
   useEffect(() => {
     if (showProjectInput) {
       setNewProjectTeams(
@@ -420,17 +430,40 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    gap: "4px",
                     padding: "4px 12px",
                   }}
                 >
                   <button
                     className={`sidebar-item ${activeTeam === team._id ? "active" : ""}`}
                     type="button"
-                    onClick={() => handleSelectTeam(team._id)}
+                    onClick={() => {
+                      handleSelectTeam(team._id);
+                      setSelectedTeamForInfo(team);
+                    }}
                     style={{ flex: 1, padding: "6px 8px", justifyContent: "flex-start" }}
                   >
                     <span>{team.name}</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTeamForAddMember(team);
+                    }}
+                    style={{
+                      padding: "4px 8px",
+                      fontSize: "11px",
+                      background: "#0052cc",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "3px",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      whiteSpace: "nowrap",
+                    }}
+                    title="Add member to team"
+                  >
+                    Add Member
                   </button>
                   <button
                     onClick={(e) => {
@@ -660,6 +693,21 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
           </div>
         </div>
       </div>
+
+      {selectedTeamForInfo && (
+        <TeamInfoModal
+          team={selectedTeamForInfo}
+          onClose={() => setSelectedTeamForInfo(null)}
+          onUpdate={handleTeamUpdate}
+        />
+      )}
+      {selectedTeamForAddMember && (
+        <TeamMembersModal
+          team={selectedTeamForAddMember}
+          onClose={() => setSelectedTeamForAddMember(null)}
+          onUpdate={handleTeamUpdate}
+        />
+      )}
     </aside>
   );
 }
