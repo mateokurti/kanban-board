@@ -1,9 +1,13 @@
 "use client";
-import { useState } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Header({ onAddNew, onSearch, activeView, onViewChange }) {
+  const { data: session } = useSession();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -22,6 +26,22 @@ export default function Header({ onAddNew, onSearch, activeView, onViewChange })
       }
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   return (
     <header className="header">
@@ -81,6 +101,96 @@ export default function Header({ onAddNew, onSearch, activeView, onViewChange })
         <button className="icon-btn" onClick={toggleSearch}>
           <span>Search</span>
         </button>
+        
+        {session?.user && (
+          <div ref={userMenuRef} style={{ position: "relative" }}>
+            <button
+              className="icon-btn"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "#0052cc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                }}
+              >
+                {session.user.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <span style={{ fontSize: "14px", marginRight: "8px" }}>{session.user.name}</span>
+            </button>
+            
+            {showUserMenu && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 4px)",
+                  right: 0,
+                  background: "#ffffff",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "var(--radius-md)",
+                  minWidth: "200px",
+                  boxShadow: "var(--shadow-lg)",
+                  zIndex: 1000,
+                }}
+              >
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: "1px solid var(--jira-border)",
+                  }}
+                >
+                  <div style={{ fontWeight: "600", fontSize: "14px" }}>
+                    {session.user.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--jira-text-secondary)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {session.user.email}
+                  </div>
+                </div>
+                <button
+                  onClick={() => signOut()}
+                  style={{
+                    width: "100%",
+                    padding: "10px 16px",
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--jira-text-primary)",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "#f8fafc";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "transparent";
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

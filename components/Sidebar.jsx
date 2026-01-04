@@ -22,6 +22,8 @@ function projectMatchesTeam(project, teamFilter) {
   const projectTeams = Array.isArray(project.teamIds) ? project.teamIds : [];
   if (teamFilter === SHOW_ALL_TEAMS) return true;
   if (teamFilter === null) return projectTeams.length === 0;
+  // Unassigned projects (no teams) only show in Unassigned node, not in team nodes
+  if (projectTeams.length === 0) return false;
   return projectTeams.includes(teamFilter);
 }
 
@@ -437,10 +439,7 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
                   <button
                     className={`sidebar-item ${activeTeam === team._id ? "active" : ""}`}
                     type="button"
-                    onClick={() => {
-                      handleSelectTeam(team._id);
-                      setSelectedTeamForInfo(team);
-                    }}
+                    onClick={() => handleSelectTeam(team._id)}
                     style={{ flex: 1, padding: "6px 8px", justifyContent: "flex-start" }}
                   >
                     <span>{team.name}</span>
@@ -448,22 +447,36 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      setSelectedTeamForInfo(team);
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--jira-text-secondary)",
+                      cursor: "pointer",
+                      fontSize: "16px",
+                      padding: "0 4px",
+                    }}
+                    title="Team info"
+                  >
+                    ℹ
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedTeamForAddMember(team);
                     }}
                     style={{
-                      padding: "4px 8px",
-                      fontSize: "11px",
-                      background: "#0052cc",
-                      color: "white",
+                      background: "transparent",
                       border: "none",
-                      borderRadius: "3px",
+                      color: "var(--jira-text-secondary)",
                       cursor: "pointer",
-                      fontFamily: "inherit",
-                      whiteSpace: "nowrap",
+                      fontSize: "16px",
+                      padding: "0 4px",
                     }}
                     title="Add member to team"
                   >
-                    Add Member
+                    +
                   </button>
                   <button
                     onClick={(e) => {

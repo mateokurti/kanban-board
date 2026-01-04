@@ -1,6 +1,5 @@
-import "./globals.css";            
+import "./globals.css";
 import Providers from "./providers";
-import Navbar from "../components/Navbar";
 
 export const metadata = {
   title: "Kanban Task Manager",
@@ -12,7 +11,6 @@ export default function RootLayout({ children }) {
     <html lang="en"> 
       <body>
         <Providers>
-          <Navbar />
           {children}
         </Providers>
       </body>

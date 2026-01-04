@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import KanbanBoardNew from "../components/KanbanBoardNew";
 import Sidebar, { SHOW_ALL_TEAMS } from "../components/Sidebar";
 import TableView from "../components/TableView";
+import TaskModal from "../components/TaskModal";
 import { getTasks } from "../lib/api/tasks";
 
 export default function Page() {
@@ -19,6 +20,7 @@ export default function Page() {
   const [activeTeam, setActiveTeam] = useState(SHOW_ALL_TEAMS);
   const [activeProject, setActiveProject] = useState(null);
   const [priorityFilter, setPriorityFilter] = useState([]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   useEffect(() => {
     if (!session?.user?.email) {
@@ -88,11 +90,8 @@ export default function Page() {
       if (activeTeam === null) {
         return task.teamId === null || task.teamId === undefined;
       }
-      return (
-        task.teamId === activeTeam ||
-        task.teamId === null ||
-        task.teamId === undefined
-      );
+      // When a specific team is selected, only show tasks assigned to that team
+      return task.teamId === activeTeam;
     })();
 
     if (!teamMatches) {
@@ -125,17 +124,7 @@ export default function Page() {
       <Sidebar onTeamChange={handleTeamChange} onProjectChange={handleProjectChange} />
       <div className="main-content">
         <Header
-          onAddNew={() => {
-            const params = new URLSearchParams();
-            if (activeTeam && activeTeam !== SHOW_ALL_TEAMS) {
-              params.set("team", activeTeam);
-            }
-            if (activeProject) {
-              params.set("project", activeProject);
-            }
-            const query = params.toString();
-            router.push(`/new-task${query ? `?${query}` : ""}`);
-          }}
+          onAddNew={() => setShowTaskModal(true)}
           onSearch={handleSearch}
           activeView={activeView}
           onViewChange={setActiveView}
@@ -176,6 +165,14 @@ export default function Page() {
             </button>
           </div>
         </div>
+
+        <TaskModal
+          isOpen={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          initialTeam={activeTeam !== SHOW_ALL_TEAMS ? activeTeam : ""}
+          initialProject={activeProject || ""}
+          onTaskCreated={() => fetchTasks(true)}
+        />
       </div>
     </div>
   );

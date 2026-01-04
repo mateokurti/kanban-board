@@ -188,7 +188,7 @@ export default function NewTaskPage() {
                     marginBottom: "8px",
                   }}
                 >
-                  Summary *
+                  Title
                 </label>
                 <input
                   className="input"
@@ -383,7 +383,7 @@ export default function NewTaskPage() {
                     marginBottom: "8px",
                   }}
                 >
-                  Project (optional)
+                  Project
                 </label>
                 <select
                   className="input"
