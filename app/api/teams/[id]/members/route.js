@@ -1,8 +1,8 @@
 import { requireAuth } from '@/lib/auth';
 import dbConnect from '@/lib/db';
+import { sendTeamInvitationEmail } from '@/lib/email';
 import Team from '@/lib/models/Team';
 import User from '@/lib/models/User';
-import { sendTeamInvitationEmail } from '@/lib/email';
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 
@@ -29,7 +29,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'User email is required' }, { status: 400 });
     }
 
-    const validRoles = ['Member', 'Tech Lead', 'QA'];
+    const validRoles = ['Member', 'Tech Lead', 'QA', 'Admin'];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
@@ -38,6 +38,22 @@ export async function POST(request, { params }) {
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
+
+    // Clean up any invalid roles in existing members before adding new one
+    result.team.members.forEach((member) => {
+      if (member.role && typeof member.role === 'string') {
+        const normalized = member.role.charAt(0).toUpperCase() + member.role.slice(1).toLowerCase();
+        if (normalized === 'Admin' || normalized === 'Member') {
+          member.role = normalized;
+        } else if (member.role.toLowerCase() === 'tech lead') {
+          member.role = 'Tech Lead';
+        } else if (member.role.toLowerCase() === 'qa') {
+          member.role = 'QA';
+        } else if (!validRoles.includes(member.role)) {
+          member.role = 'Member'; // Default invalid roles to Member
+        }
+      }
+    });
 
     await dbConnect();
     const user = await User.findOne({ email: email.toLowerCase().trim() });
