@@ -327,26 +327,32 @@ export default function ModernKanbanBoard({ tasks = [], onMoved }) {
                             <option value="low">Low Priority</option>
                             <option value="medium">Medium Priority</option>
                             <option value="high">High Priority</option>
+                            <option value="urgent">Urgent Priority</option>
                           </select>
                           
-                          {editTeamMembers.length > 0 && (
-                            <select
-                              className="modern-task-select"
-                              value={editForm.assignedTo}
-                              onChange={(e) => setEditForm({ ...editForm, assignedTo: e.target.value })}
-                            >
-                              <option value="">Unassigned</option>
-                              {editTeamMembers.map((member) => {
-                                const memberId = typeof member.userId === 'string' ? member.userId : member.userId?._id;
-                                const memberName = member.name || member.userId?.name || member.email || "Unknown";
-                                return (
-                                  <option key={memberId} value={memberId}>
-                                    {memberName} ({member.role})
-                                  </option>
-                                );
-                              })}
-                            </select>
+                          <select
+                            className="modern-task-select"
+                            value={editForm.assignedTo}
+                            onChange={(e) => setEditForm({ ...editForm, assignedTo: e.target.value })}
+                          >
+                            <option value="">Unassigned</option>
+                            {editTeamMembers.map((member) => {
+                              const memberId = typeof member.userId === 'string' ? member.userId : member.userId?._id;
+                              const memberName = member.name || member.userId?.name || member.email || "Unknown";
+                              return (
+                                <option key={memberId} value={memberId}>
+                                  {memberName} ({member.role})
+                                </option>
+                              );
+                            })}
+                          </select>
+                          
+                          {editTeamMembers.length === 0 && (
+                            <div style={{ fontSize: '12px', color: '#8b949e', marginTop: '-8px' }}>
+                              Assign a team to this task to assign users
+                            </div>
                           )}
+                          
                           <div className="modern-task-actions">
                             <button className="modern-btn modern-btn-primary" onClick={() => saveEdit(task._id)}>
                               Save
