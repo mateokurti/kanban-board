@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import Dashboard from "../components/Dashboard";
 import Header from "../components/Header";
 import ModernKanbanBoard from "../components/ModernKanbanBoard";
-import Sidebar, { MY_WORK, SHOW_ALL_TEAMS, UNASSIGNED_PROJECT } from "../components/Sidebar";
+import ModernTaskModal from "../components/ModernTaskModal";
+import NewSidebar, { MY_WORK, SHOW_ALL_TEAMS, UNASSIGNED_PROJECT, UNASSIGNED_TEAM } from "../components/NewSidebar";
 import TableView from "../components/TableView";
-import TaskModal from "../components/TaskModal";
 import { getTasks } from "../lib/api/tasks";
 
 export default function Page() {
@@ -100,11 +100,24 @@ export default function Page() {
   };
 
   const filteredTasks = tasks.filter((task) => {
+    // If a project is selected, only show tasks for that project
+    if (activeProject === UNASSIGNED_PROJECT) {
+      // Show tasks with no project assigned
+      return task.projectId === null || task.projectId === undefined;
+    } else if (activeProject) {
+      // Show tasks assigned to the selected project
+      return task.projectId === activeProject;
+    }
+
+    // No project filter, apply team and other filters
     const matchesActiveProject = Boolean(activeProject && activeProject !== UNASSIGNED_PROJECT && task.projectId === activeProject);
-    const isUnassignedProject = activeProject === UNASSIGNED_PROJECT;
 
     const teamMatches = (() => {
       if (activeTeam === SHOW_ALL_TEAMS) return true;
+      if (activeTeam === UNASSIGNED_TEAM) {
+        // Show tasks with no team assigned
+        return task.teamId === null || task.teamId === undefined;
+      }
       if (activeTeam === MY_WORK) {
         // Show tasks assigned to the user OR in teams where user is a member
         if (!session?.user?.id) return false;
@@ -134,20 +147,6 @@ export default function Page() {
       return false;
     }
 
-    if (isUnassignedProject) {
-      // Show tasks that have the active team but NO project
-      return task.teamId === activeTeam && (task.projectId === null || task.projectId === undefined);
-    }
-
-    if (activeProject) {
-      const projectlessVisible =
-        activeTeam !== SHOW_ALL_TEAMS &&
-        (task.projectId === null || task.projectId === undefined);
-      if (!matchesActiveProject && !projectlessVisible) {
-        return false;
-      }
-    }
-
     if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
       return false;
     }
@@ -162,7 +161,7 @@ export default function Page() {
 
   return (
     <div className="app-layout">
-      <Sidebar onTeamChange={handleTeamChange} onProjectChange={handleProjectChange} />
+      <NewSidebar onTeamChange={handleTeamChange} onProjectChange={handleProjectChange} />
       <div className="main-content">
         <Header
           onAddNew={() => setShowTaskModal(true)}
@@ -209,11 +208,11 @@ export default function Page() {
           </div>
         </div>
 
-        <TaskModal
+        <ModernTaskModal
           isOpen={showTaskModal}
           onClose={() => setShowTaskModal(false)}
-          initialTeam={activeTeam !== SHOW_ALL_TEAMS ? activeTeam : ""}
-          initialProject={activeProject || ""}
+          initialTeam={activeTeam !== SHOW_ALL_TEAMS && activeTeam !== MY_WORK && activeTeam !== UNASSIGNED_TEAM ? activeTeam : ""}
+          initialProject={activeProject && activeProject !== UNASSIGNED_PROJECT ? activeProject : ""}
           onTaskCreated={() => fetchTasks(true)}
         />
       </div>
