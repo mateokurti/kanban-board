@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Header from "../components/Header";
 import KanbanBoardNew from "../components/KanbanBoardNew";
@@ -11,6 +11,7 @@ import { getTasks } from "../lib/api/tasks";
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +67,16 @@ export default function Page() {
 
     return () => clearInterval(interval);
   }, [fetchTasks]);
+
+  // Refetch tasks when returning from new-task page
+  useEffect(() => {
+    const refreshParam = searchParams.get('refresh');
+    if (refreshParam) {
+      fetchTasks();
+      // Clean up URL without the refresh param
+      router.replace('/');
+    }
+  }, [searchParams, fetchTasks, router]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
