@@ -164,12 +164,12 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
       <div
         style={{
           background: "#ffffff",
-          borderRadius: "var(--radius-lg)",
-          maxWidth: "700px",
+          borderRadius: "8px",
+          maxWidth: "600px",
           width: "100%",
           maxHeight: "90vh",
           overflow: "auto",
-          boxShadow: "var(--shadow-xl)",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -177,7 +177,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
         <div
           style={{
             padding: "24px 32px",
-            borderBottom: "1px solid var(--border-color)",
+            borderBottom: "1px solid #e5e7eb",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -185,10 +185,10 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
         >
           <h2
             style={{
-              fontSize: "24px",
-              fontWeight: "700",
+              fontSize: "20px",
+              fontWeight: "600",
               margin: 0,
-              color: "var(--jira-text-primary)",
+              color: "#1f2937",
             }}
           >
             Create New Task
@@ -199,7 +199,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
               background: "transparent",
               border: "none",
               fontSize: "24px",
-              color: "var(--jira-text-secondary)",
+              color: "#6b7280",
               cursor: "pointer",
               padding: "0",
               width: "32px",
@@ -207,10 +207,10 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: "var(--radius-md)",
+              borderRadius: "4px",
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = "#f1f5f9";
+              e.target.style.background = "#f3f4f6";
             }}
             onMouseLeave={(e) => {
               e.target.style.background = "transparent";
@@ -230,21 +230,20 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
               gap: "24px",
             }}
           >
-            {/* Title Field */}
+            {/* Summary Field */}
             <div>
               <label
                 style={{
                   display: "block",
                   fontSize: "14px",
                   fontWeight: "600",
-                  color: "var(--jira-text-primary)",
+                  color: "#1f2937",
                   marginBottom: "8px",
                 }}
               >
                 Summary *
               </label>
               <input
-                className="task-input"
                 type="text"
                 placeholder="What needs to be done?"
                 value={title}
@@ -252,7 +251,20 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                 required
                 style={{
                   width: "100%",
-                  fontSize: "16px",
+                  fontSize: "14px",
+                  padding: "10px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  outline: "none",
+                  fontFamily: "inherit",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#3b82f6";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.boxShadow = "none";
                 }}
               />
             </div>
@@ -264,14 +276,13 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                   display: "block",
                   fontSize: "14px",
                   fontWeight: "600",
-                  color: "var(--jira-text-primary)",
+                  color: "#1f2937",
                   marginBottom: "8px",
                 }}
               >
                 Description
               </label>
               <textarea
-                className="task-textarea"
                 rows={4}
                 placeholder="Add more details..."
                 value={description}
@@ -279,7 +290,20 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                 style={{
                   width: "100%",
                   fontSize: "14px",
+                  padding: "10px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  outline: "none",
                   resize: "vertical",
+                  fontFamily: "inherit",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#3b82f6";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.boxShadow = "none";
                 }}
               />
             </div>
@@ -291,7 +315,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                   display: "block",
                   fontSize: "14px",
                   fontWeight: "600",
-                  color: "var(--jira-text-primary)",
+                  color: "#1f2937",
                   marginBottom: "8px",
                 }}
               >
@@ -301,7 +325,6 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                 <button
                   type="button"
                   onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
-                  className="task-select"
                   style={{
                     width: "100%",
                     fontSize: "14px",
@@ -310,17 +333,31 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                     justifyContent: "space-between",
                     cursor: "pointer",
                     textAlign: "left",
+                    padding: "10px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    background: "#ffffff",
+                    outline: "none",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#3b82f6";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.boxShadow = "none";
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ fontSize: "16px" }}>
                       {priority === "high" ? "🔴" : priority === "medium" ? "🟠" : "🔵"}
                     </span>
-                    <span>
+                    <span style={{ color: "#1f2937" }}>
                       {priority === "high" ? "High" : priority === "medium" ? "Medium" : "Low"}
                     </span>
                   </span>
-                  <span>▼</span>
+                  <span style={{ color: "#6b7280" }}>▼</span>
                 </button>
 
                 {showPriorityDropdown && (
@@ -331,9 +368,9 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                       left: "0",
                       width: "100%",
                       background: "#ffffff",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "var(--radius-md)",
-                      boxShadow: "var(--shadow-lg)",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                       zIndex: 1000,
                     }}
                   >
@@ -351,16 +388,16 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                             display: "flex",
                             alignItems: "center",
                             gap: "10px",
-                            background: priority === p ? "#f1f5f9" : "transparent",
+                            background: priority === p ? "#f3f4f6" : "transparent",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "#f9fafb";
                           }}
                           onMouseLeave={(e) => {
                             if (priority !== p) {
                               e.currentTarget.style.background = "transparent";
                             } else {
-                              e.currentTarget.style.background = "#f1f5f9";
+                              e.currentTarget.style.background = "#f3f4f6";
                             }
                           }}
                         >
@@ -370,7 +407,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                           <span
                             style={{
                               fontSize: "14px",
-                              color: "var(--jira-text-primary)",
+                              color: "#1f2937",
                               fontWeight: priority === p ? "600" : "400",
                             }}
                           >
@@ -391,19 +428,34 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                   display: "block",
                   fontSize: "14px",
                   fontWeight: "600",
-                  color: "var(--jira-text-primary)",
+                  color: "#1f2937",
                   marginBottom: "8px",
                 }}
               >
                 Team
               </label>
               <select
-                className="task-select"
                 value={selectedTeam}
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 style={{
                   width: "100%",
                   fontSize: "14px",
+                  padding: "10px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  outline: "none",
+                  background: "#ffffff",
+                  color: "#1f2937",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#3b82f6";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.boxShadow = "none";
                 }}
               >
                 <option value="">Unassigned</option>
@@ -422,21 +474,38 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                   display: "block",
                   fontSize: "14px",
                   fontWeight: "600",
-                  color: "var(--jira-text-primary)",
+                  color: "#1f2937",
                   marginBottom: "8px",
                 }}
               >
                 Project (optional)
               </label>
               <select
-                className="task-select"
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
                 style={{
                   width: "100%",
                   fontSize: "14px",
+                  padding: "10px 12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  outline: "none",
+                  background: "#ffffff",
+                  color: "#1f2937",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
                 }}
                 disabled={metaLoading}
+                onFocus={(e) => {
+                  if (!metaLoading) {
+                    e.target.style.borderColor = "#3b82f6";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                  }
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.boxShadow = "none";
+                }}
               >
                 <option value="">Unassigned</option>
                 {availableProjects.map((project) => (
@@ -449,18 +518,18 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
                 <div
                   style={{
                     fontSize: "12px",
-                    color: "var(--jira-text-secondary)",
+                    color: "#6b7280",
                     marginTop: "6px",
                   }}
                 >
-                  No projects for this team yet.
+                  Select a team to see its projects.
                 </div>
               )}
               {!selectedTeam && availableProjects.length === 0 && projects.length > 0 && (
                 <div
                   style={{
                     fontSize: "12px",
-                    color: "var(--jira-text-secondary)",
+                    color: "#6b7280",
                     marginTop: "6px",
                   }}
                 >
@@ -474,7 +543,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
               <div
                 style={{
                   padding: "12px 16px",
-                  borderRadius: "var(--radius-md)",
+                  borderRadius: "6px",
                   background: "#fef2f2",
                   border: "1px solid #fecaca",
                   color: "#dc2626",
@@ -490,7 +559,7 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
           <div
             style={{
               padding: "20px 32px",
-              borderTop: "1px solid var(--border-color)",
+              borderTop: "1px solid #e5e7eb",
               display: "flex",
               gap: "12px",
               justifyContent: "flex-end",
@@ -499,9 +568,22 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
             <button
               type="button"
               onClick={handleClose}
-              className="btn btn-secondary"
               style={{
                 padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: "500",
+                borderRadius: "6px",
+                border: "1px solid #d1d5db",
+                background: "#ffffff",
+                color: "#374151",
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "#f9fafb";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "#ffffff";
               }}
             >
               Cancel
@@ -509,9 +591,26 @@ export default function TaskModal({ isOpen, onClose, initialTeam, initialProject
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary"
               style={{
                 padding: "10px 24px",
+                fontSize: "14px",
+                fontWeight: "500",
+                borderRadius: "6px",
+                border: "none",
+                background: loading ? "#93c5fd" : "#3b82f6",
+                color: "#ffffff",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontFamily: "inherit",
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.target.style.background = "#2563eb";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.target.style.background = "#3b82f6";
+                }
               }}
             >
               {loading ? "Creating..." : "Create Task"}

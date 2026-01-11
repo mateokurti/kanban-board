@@ -105,7 +105,8 @@ export default function NewTaskPage() {
         teamId: selectedTeam || null,
         projectId: selectedProject || null
       });
-      router.push("/");
+      // Add a timestamp to force the page to reload tasks
+      router.push("/?refresh=" + Date.now());
     } catch (err) {
       console.error("Error creating task:", err);
       setError(err.message || "Failed to create task. Please try again.");
@@ -118,24 +119,24 @@ export default function NewTaskPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--jira-bg-main)",
+        background: "#f9fafb",
         padding: "40px 20px",
       }}
     >
       <div
         style={{
-          maxWidth: "800px",
+          maxWidth: "600px",
           margin: "0 auto",
         }}
       >
         {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
+        <div style={{ marginBottom: "24px" }}>
           <button
             onClick={() => router.push("/")}
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--jira-text-secondary)",
+              color: "#6b7280",
               cursor: "pointer",
               fontSize: "14px",
               padding: "8px 0",
@@ -143,16 +144,23 @@ export default function NewTaskPage() {
               display: "flex",
               alignItems: "center",
               gap: "8px",
+              fontFamily: "inherit",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#1f2937";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#6b7280";
             }}
           >
             ← Back to board
           </button>
           <h1
             style={{
-              fontSize: "28px",
+              fontSize: "20px",
               fontWeight: "600",
               margin: "0",
-              color: "var(--jira-text-primary)",
+              color: "#1f2937",
             }}
           >
             Create New Task
@@ -162,11 +170,11 @@ export default function NewTaskPage() {
         {/* Form Card */}
         <div
           style={{
-            background: "var(--jira-bg-card)",
-            border: "2px solid var(--jira-border)",
-            borderRadius: "3px",
+            background: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
             padding: "32px",
-            boxShadow: "var(--shadow-sm)",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
           }}
         >
           <form onSubmit={handleSubmit}>
@@ -177,21 +185,20 @@ export default function NewTaskPage() {
                 gap: "24px",
               }}
             >
-              {/* Title Field */}
+              {/* Summary Field */}
               <div>
                 <label
                   style={{
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "var(--jira-text-primary)",
+                    color: "#1f2937",
                     marginBottom: "8px",
                   }}
                 >
-                  Title
+                  Summary *
                 </label>
                 <input
-                  className="input"
                   type="text"
                   placeholder="What needs to be done?"
                   value={title}
@@ -199,7 +206,20 @@ export default function NewTaskPage() {
                   required
                   style={{
                     width: "100%",
-                    fontSize: "16px",
+                    fontSize: "14px",
+                    padding: "10px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    outline: "none",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#3b82f6";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -211,22 +231,34 @@ export default function NewTaskPage() {
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "var(--jira-text-primary)",
+                    color: "#1f2937",
                     marginBottom: "8px",
                   }}
                 >
                   Description
                 </label>
                 <textarea
-                  className="input"
-                  rows={6}
+                  rows={4}
                   placeholder="Add more details..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   style={{
                     width: "100%",
                     fontSize: "14px",
+                    padding: "10px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    outline: "none",
                     resize: "vertical",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#3b82f6";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.boxShadow = "none";
                   }}
                 />
               </div>
@@ -238,7 +270,7 @@ export default function NewTaskPage() {
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "var(--jira-text-primary)",
+                    color: "#1f2937",
                     marginBottom: "8px",
                   }}
                 >
@@ -248,7 +280,6 @@ export default function NewTaskPage() {
                   <button
                     type="button"
                     onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
-                    className="input"
                     style={{
                       width: "100%",
                       fontSize: "14px",
@@ -257,17 +288,31 @@ export default function NewTaskPage() {
                       justifyContent: "space-between",
                       cursor: "pointer",
                       textAlign: "left",
+                      padding: "10px 12px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px",
+                      background: "#ffffff",
+                      outline: "none",
+                      fontFamily: "inherit",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#3b82f6";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "#d1d5db";
+                      e.target.style.boxShadow = "none";
                     }}
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ fontSize: "16px" }}>
                         {priority === "high" ? "🔴" : priority === "medium" ? "🟠" : "🔵"}
                       </span>
-                      <span>
-                        {priority === "high" ? " High" : priority === "medium" ? " Medium" : " Low"}
+                      <span style={{ color: "#1f2937" }}>
+                        {priority === "high" ? "High" : priority === "medium" ? "Medium" : "Low"}
                       </span>
                     </span>
-                    <span>▼</span>
+                    <span style={{ color: "#6b7280" }}>▼</span>
                   </button>
 
                   {showPriorityDropdown && (
@@ -277,10 +322,10 @@ export default function NewTaskPage() {
                         top: "calc(100% + 4px)",
                         left: "0",
                         width: "100%",
-                        background: "wheat",
-                        border: "1px solid var(--jira-border)",
-                        borderRadius: "3px",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                        background: "#ffffff",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                         zIndex: 1000,
                       }}
                     >
@@ -290,48 +335,38 @@ export default function NewTaskPage() {
                             key={p}
                             onClick={() => {
                               setPriority(p);
+                              setShowPriorityDropdown(false);
                             }}
                             style={{
-                              padding: "8px 12px",
+                              padding: "10px 14px",
                               cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
-                              gap: "8px",
-                              background:
-                                priority === p
-                                  ? "rgba(255, 255, 255, 0.05)"
-                                  : "transparent",
+                              gap: "10px",
+                              background: priority === p ? "#f3f4f6" : "transparent",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(255, 255, 255, 0.05)";
+                              e.currentTarget.style.background = "#f9fafb";
                             }}
                             onMouseLeave={(e) => {
                               if (priority !== p) {
                                 e.currentTarget.style.background = "transparent";
+                              } else {
+                                e.currentTarget.style.background = "#f3f4f6";
                               }
                             }}
                           >
-                            <input
-                              type="checkbox"
-                              checked={priority === p}
-                              readOnly
-                              style={{
-                                width: "16px",
-                                height: "16px",
-                                cursor: "pointer",
-                              }}
-                            />
                             <span style={{ fontSize: "16px" }}>
                               {p === "high" ? "🔴" : p === "medium" ? "🟠" : "🔵"}
                             </span>
                             <span
                               style={{
                                 fontSize: "14px",
-                                color: "var(--jira-text-primary)",
+                                color: "#1f2937",
+                                fontWeight: priority === p ? "600" : "400",
                               }}
                             >
-                              {p === "high" ? " High" : p === "medium" ? " Medium" : " Low"}
+                              {p === "high" ? "High" : p === "medium" ? "Medium" : "Low"}
                             </span>
                           </div>
                         ))}
@@ -348,19 +383,34 @@ export default function NewTaskPage() {
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "var(--jira-text-primary)",
+                    color: "#1f2937",
                     marginBottom: "8px",
                   }}
                 >
                   Team
                 </label>
                 <select
-                  className="input"
                   value={selectedTeam}
                   onChange={(e) => setSelectedTeam(e.target.value)}
                   style={{
                     width: "100%",
                     fontSize: "14px",
+                    padding: "10px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    outline: "none",
+                    background: "#ffffff",
+                    color: "#1f2937",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#3b82f6";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.boxShadow = "none";
                   }}
                 >
                   <option value="">Unassigned</option>
@@ -379,21 +429,38 @@ export default function NewTaskPage() {
                     display: "block",
                     fontSize: "14px",
                     fontWeight: "600",
-                    color: "var(--jira-text-primary)",
+                    color: "#1f2937",
                     marginBottom: "8px",
                   }}
                 >
-                  Project
+                  Project (optional)
                 </label>
                 <select
-                  className="input"
                   value={selectedProject}
                   onChange={(e) => setSelectedProject(e.target.value)}
                   style={{
                     width: "100%",
                     fontSize: "14px",
+                    padding: "10px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    outline: "none",
+                    background: "#ffffff",
+                    color: "#1f2937",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
                   }}
                   disabled={metaLoading}
+                  onFocus={(e) => {
+                    if (!metaLoading) {
+                      e.target.style.borderColor = "#3b82f6";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                    }
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                    e.target.style.boxShadow = "none";
+                  }}
                 >
                   <option value="">Unassigned</option>
                   {availableProjects.map((project) => (
@@ -406,18 +473,18 @@ export default function NewTaskPage() {
                   <div
                     style={{
                       fontSize: "12px",
-                      color: "var(--jira-text-secondary)",
+                      color: "#6b7280",
                       marginTop: "6px",
                     }}
                   >
-                    No projects for this team yet.
+                    Select a team to see its projects.
                   </div>
                 )}
                 {!selectedTeam && availableProjects.length === 0 && projects.length > 0 && (
                   <div
                     style={{
                       fontSize: "12px",
-                      color: "var(--jira-text-secondary)",
+                      color: "#6b7280",
                       marginTop: "6px",
                     }}
                   >
@@ -429,10 +496,13 @@ export default function NewTaskPage() {
               {/* Error Message */}
               {error && (
                 <div
-                  className="error-message"
                   style={{
-                    padding: "12px",
-                    borderRadius: "3px",
+                    padding: "12px 16px",
+                    borderRadius: "6px",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#dc2626",
+                    fontSize: "14px",
                   }}
                 >
                   {error}
@@ -445,21 +515,30 @@ export default function NewTaskPage() {
                   display: "flex",
                   gap: "12px",
                   justifyContent: "flex-end",
-                  paddingTop: "200px",
+                  paddingTop: "8px",
+                  borderTop: "1px solid #e5e7eb",
+                  marginTop: "8px",
                 }}
               >
                 <button
                   type="button"
                   onClick={() => router.push("/")}
                   style={{
-                    padding: "8px 20px",
+                    padding: "10px 20px",
                     fontSize: "14px",
                     fontWeight: "500",
-                    borderRadius: "3px",
-                    border: "1px solid var(--jira-border)",
-                    background: "transparent",
-                    color: "var(--jira-text-secondary)",
+                    borderRadius: "6px",
+                    border: "1px solid #d1d5db",
+                    background: "#ffffff",
+                    color: "#374151",
                     cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "#f9fafb";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "#ffffff";
                   }}
                 >
                   Cancel
@@ -467,11 +546,26 @@ export default function NewTaskPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn"
                   style={{
-                    padding: "8px 24px",
+                    padding: "10px 24px",
                     fontSize: "14px",
                     fontWeight: "500",
+                    borderRadius: "6px",
+                    border: "none",
+                    background: loading ? "#93c5fd" : "#3b82f6",
+                    color: "#ffffff",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontFamily: "inherit",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loading) {
+                      e.target.style.background = "#2563eb";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!loading) {
+                      e.target.style.background = "#3b82f6";
+                    }
                   }}
                 >
                   {loading ? "Creating..." : "Create Task"}
