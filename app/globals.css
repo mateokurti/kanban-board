@@ -470,6 +470,27 @@
   background: #58a6ff;
 }
 
+.ns-project-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ns-project-row .ns-project-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.ns-project-action {
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.ns-project-row:hover .ns-project-action {
+  opacity: 1;
+}
+
 .ns-section::-webkit-scrollbar {
   width: 6px;
 }
