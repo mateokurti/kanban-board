@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireAdmin, canManageProjects } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Project from '@/lib/models/Project';
 import Team from '@/lib/models/Team';
@@ -33,9 +33,25 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const teamId = searchParams.get('teamId');
 
-    const query = { userId: session.user.id };
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    const query = {
+      $or: [
+        { userId: session.user.id },
+        { teamIds: { $in: userTeamIds } }
+      ]
+    };
+
     if (teamId && mongoose.Types.ObjectId.isValid(teamId)) {
       query.teamIds = teamId;
+      delete query.$or;
     }
 
     const projects = await Project.find(query).sort({ name: 1 });
@@ -61,6 +77,16 @@ export async function POST(request) {
 
     await dbConnect();
 
+    if (teamIds && teamIds.length > 0) {
+      const hasPermission = await canManageProjects(session, teamIds[0]);
+      if (!hasPermission) {
+        return NextResponse.json(
+          { error: 'Forbidden: You need Admin or Project Manager role in this team to create projects' },
+          { status: 403 }
+        );
+      }
+    }
+
     const resolvedTeamIds = await resolveTeamIds(teamIds, session.user.id);
 
     const project = await Project.create({
@@ -77,6 +103,9 @@ export async function POST(request) {
     }
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error('Error creating project:', error);
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });

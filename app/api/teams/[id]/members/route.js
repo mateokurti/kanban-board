@@ -29,7 +29,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'User email is required' }, { status: 400 });
     }
 
-    const validRoles = ['Member', 'Tech Lead', 'QA', 'Admin'];
+    const validRoles = ['Member', 'Admin', 'Project Manager', 'Tech Lead', 'QA'];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
@@ -39,18 +39,19 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    // Clean up any invalid roles in existing members before adding new one
     result.team.members.forEach((member) => {
       if (member.role && typeof member.role === 'string') {
         const normalized = member.role.charAt(0).toUpperCase() + member.role.slice(1).toLowerCase();
-        if (normalized === 'Admin' || normalized === 'Member') {
+        if (normalized === 'Member' || normalized === 'Admin') {
           member.role = normalized;
         } else if (member.role.toLowerCase() === 'tech lead') {
           member.role = 'Tech Lead';
         } else if (member.role.toLowerCase() === 'qa') {
           member.role = 'QA';
+        } else if (member.role.toLowerCase() === 'project manager') {
+          member.role = 'Project Manager';
         } else if (!validRoles.includes(member.role)) {
-          member.role = 'Member'; // Default invalid roles to Member
+          member.role = 'Member';
         }
       }
     });

@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, canCreateTasks } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Project from '@/lib/models/Project';
 import Task from '@/lib/models/Task';
@@ -24,7 +24,6 @@ function serializeTask(taskDoc) {
   };
 }
 
-// GET all tasks for the authenticated user
 export async function GET(request) {
   try {
     const session = await requireAuth();
@@ -35,13 +34,29 @@ export async function GET(request) {
     const projectId = searchParams.get('projectId');
     const includeUnassigned = searchParams.get('includeUnassigned');
 
-    const query = { userId: session.user.id };
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    const query = {
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    };
 
     if (teamId) {
       if (teamId === 'unassigned') {
         query.teamId = null;
+        delete query.$or;
       } else if (mongoose.Types.ObjectId.isValid(teamId)) {
         query.teamId = teamId;
+        delete query.$or;
       }
     }
 
@@ -67,7 +82,7 @@ export async function GET(request) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     console.error('Error fetching tasks:', error);
     return NextResponse.json(
       { error: 'Failed to fetch tasks' },
@@ -76,7 +91,6 @@ export async function GET(request) {
   }
 }
 
-// POST create a new task
 export async function POST(request) {
   try {
     const session = await requireAuth();
@@ -126,9 +140,16 @@ export async function POST(request) {
           );
         }
       } else if (project.teamIds.length === 1) {
-        // Auto-set team if project only belongs to one team
         resolvedTeamId = project.teamIds[0];
       }
+    }
+
+    const hasPermission = await canCreateTasks(session, resolvedTeamId);
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: You need admin, project_manager role, or Project Manager role in this team to create tasks' },
+        { status: 403 }
+      );
     }
 
     const task = await Task.create({
@@ -142,13 +163,15 @@ export async function POST(request) {
       userId: session.user.id,
     });
 
-    // Populate assignedTo before serializing
     await task.populate('assignedTo', 'name email');
 
     return NextResponse.json({ task: serializeTask(task) }, { status: 201 });
   } catch (error) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
 
     console.error('Error creating task:', error);

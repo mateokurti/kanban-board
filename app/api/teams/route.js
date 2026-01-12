@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireAdmin } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Team from '@/lib/models/Team';
 import { NextResponse } from 'next/server';
@@ -30,7 +30,12 @@ export async function GET() {
     const session = await requireAuth();
     await dbConnect();
 
-    const teams = await Team.find({ userId: session.user.id })
+    const teams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    })
       .populate('userId', 'name email')
       .populate({
         path: 'members.userId',
@@ -38,6 +43,7 @@ export async function GET() {
         options: { strictPopulate: false }
       })
       .sort({ name: 1 });
+
     return NextResponse.json({ teams: teams.map(serializeTeam) }, { status: 200 });
   } catch (error) {
     if (error.message === 'Unauthorized') {
@@ -50,7 +56,7 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const session = await requireAuth();
+    const session = await requireAdmin();
     const body = await request.json();
     const { name } = body;
 
@@ -72,6 +78,9 @@ export async function POST(request) {
     }
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error('Error creating team:', error);
     return NextResponse.json({ error: 'Failed to create team' }, { status: 500 });

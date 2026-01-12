@@ -24,7 +24,6 @@ function serializeTask(taskDoc) {
   };
 }
 
-// GET single task
 export async function GET(request, { params }) {
   try {
     const session = await requireAuth();
@@ -36,7 +35,22 @@ export async function GET(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOne({ _id: id, userId: session.user.id });
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    const task = await Task.findOne({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -56,7 +70,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT update task
 export async function PUT(request, { params }) {
   try {
     const session = await requireAuth();
@@ -69,7 +82,22 @@ export async function PUT(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOne({ _id: id, userId: session.user.id });
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    const task = await Task.findOne({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -129,8 +157,7 @@ export async function PUT(request, { params }) {
     }
 
     await task.save();
-    
-    // Populate assignedTo before serializing
+
     await task.populate('assignedTo', 'name email');
 
     return NextResponse.json({ task: serializeTask(task) }, { status: 200 });
@@ -147,7 +174,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE task
 export async function DELETE(request, { params }) {
   try {
     const session = await requireAuth();
@@ -159,7 +185,22 @@ export async function DELETE(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOneAndDelete({ _id: id, userId: session.user.id });
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    const task = await Task.findOneAndDelete({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
