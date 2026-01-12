@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Header({ onAddNew, onSearch, activeView, onViewChange }) {
   const { data: session } = useSession();
+  const userRole = session?.user?.role;
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -47,13 +48,15 @@ export default function Header({ onAddNew, onSearch, activeView, onViewChange })
     <header className="header">
       <div className="header-left">
         <div className="header-tabs">
-          <button
-            className={`header-tab ${activeView === "add" ? "active" : ""}`}
-            onClick={onAddNew}
-          >
-            <span className="add-icon">+</span>
-            <span>Add new</span>
-          </button>
+          {(userRole === 'admin' || userRole === 'project_manager') && (
+            <button
+              className={`header-tab ${activeView === "add" ? "active" : ""}`}
+              onClick={onAddNew}
+            >
+              <span className="add-icon">+</span>
+              <span>Add new</span>
+            </button>
+          )}
         </div>
 
         <div className="header-views">
@@ -171,6 +174,20 @@ export default function Header({ onAddNew, onSearch, activeView, onViewChange })
                     }}
                   >
                     {session.user.email}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#0052cc",
+                      marginTop: "6px",
+                      padding: "2px 8px",
+                      background: "#e3f2ff",
+                      borderRadius: "3px",
+                      display: "inline-block",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {(userRole || 'member').replace('_', ' ')}
                   </div>
                 </div>
                 <button

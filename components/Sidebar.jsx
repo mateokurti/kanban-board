@@ -36,6 +36,7 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
   const { data: session } = useSession();
   const router = useRouter();
   const email = session?.user?.email;
+  const userRole = session?.user?.role;
 
   const [teams, setTeams] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -353,9 +354,11 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
           <div className="sidebar-section-header">
             <span>▼</span>
             <span>Teams</span>
-            <button className="add-btn" type="button" onClick={() => setShowTeamInput(true)}>
-              +
-            </button>
+            {userRole === 'admin' && (
+              <button className="add-btn" type="button" onClick={() => setShowTeamInput(true)}>
+                +
+              </button>
+            )}
           </div>
           <div className="sidebar-section-content">
             <button
@@ -525,9 +528,11 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
           <div className="sidebar-section-header">
             <span>▼</span>
             <span>Projects</span>
-            <button className="add-btn" type="button" onClick={() => setShowProjectInput(true)}>
-              +
-            </button>
+            {userRole === 'admin' && (
+              <button className="add-btn" type="button" onClick={() => setShowProjectInput(true)}>
+                +
+              </button>
+            )}
           </div>
 
           <div className="sidebar-section-content">
@@ -696,24 +701,26 @@ export default function Sidebar({ onTeamChange, onProjectChange }) {
                     <span className="project-icon">{project.icon || "📁"}</span>
                     <span>{project.name}</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCreateProjectTask(project._id);
-                    }}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--jira-text-secondary)",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      padding: "0 4px",
-                    }}
-                    title="Create task in this project"
-                  >
-                    +
-                  </button>
+                  {(userRole === 'admin' || userRole === 'project_manager') && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateProjectTask(project._id);
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--jira-text-secondary)",
+                        cursor: "pointer",
+                        fontSize: "16px",
+                        padding: "0 4px",
+                      }}
+                      title="Create task in this project"
+                    >
+                      +
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

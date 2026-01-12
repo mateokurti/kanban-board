@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, canCreateTasks } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Project from '@/lib/models/Project';
 import Task from '@/lib/models/Task';
@@ -35,13 +35,31 @@ export async function GET(request) {
     const projectId = searchParams.get('projectId');
     const includeUnassigned = searchParams.get('includeUnassigned');
 
-    const query = { userId: session.user.id };
+    // Find all teams where user is owner or member
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    // Base query: tasks from user's teams OR tasks created by user
+    const query = {
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    };
 
     if (teamId) {
       if (teamId === 'unassigned') {
         query.teamId = null;
+        delete query.$or;
       } else if (mongoose.Types.ObjectId.isValid(teamId)) {
         query.teamId = teamId;
+        delete query.$or;
       }
     }
 
@@ -67,7 +85,7 @@ export async function GET(request) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     console.error('Error fetching tasks:', error);
     return NextResponse.json(
       { error: 'Failed to fetch tasks' },
@@ -131,6 +149,15 @@ export async function POST(request) {
       }
     }
 
+    // Check if user has permission to create tasks
+    const hasPermission = await canCreateTasks(session, resolvedTeamId);
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: You need admin, project_manager role, or Project Manager role in this team to create tasks' },
+        { status: 403 }
+      );
+    }
+
     const task = await Task.create({
       title,
       description,
@@ -149,6 +176,9 @@ export async function POST(request) {
   } catch (error) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
 
     console.error('Error creating task:', error);

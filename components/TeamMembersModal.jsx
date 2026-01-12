@@ -4,7 +4,7 @@ import { useState } from "react";
 import { addTeamMember } from "../lib/api/teams";
 import UsersListModal from "./UsersListModal";
 
-const ROLES = ["Member", "Tech Lead", "QA", "Admin"];
+const ROLES = ["Member", "Tech Lead", "QA", "Admin","Project Manager"];
 
 export default function TeamMembersModal({ team, onClose, onUpdate }) {
   const [memberEmail, setMemberEmail] = useState("");

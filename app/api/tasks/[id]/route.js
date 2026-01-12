@@ -36,7 +36,24 @@ export async function GET(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOne({ _id: id, userId: session.user.id });
+    // Find all teams where user is owner or member
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    // Find task where user has access (either created by user or in user's team)
+    const task = await Task.findOne({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -69,7 +86,24 @@ export async function PUT(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOne({ _id: id, userId: session.user.id });
+    // Find all teams where user is owner or member
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    // Find task where user has access
+    const task = await Task.findOne({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -159,7 +193,24 @@ export async function DELETE(request, { params }) {
 
     await dbConnect();
 
-    const task = await Task.findOneAndDelete({ _id: id, userId: session.user.id });
+    // Find all teams where user is owner or member
+    const userTeams = await Team.find({
+      $or: [
+        { userId: session.user.id },
+        { 'members.userId': session.user.id }
+      ]
+    });
+
+    const userTeamIds = userTeams.map(team => team._id.toString());
+
+    // Find and delete task where user has access
+    const task = await Task.findOneAndDelete({
+      _id: id,
+      $or: [
+        { userId: session.user.id },
+        { teamId: { $in: userTeamIds } }
+      ]
+    });
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
