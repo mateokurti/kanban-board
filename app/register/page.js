@@ -15,17 +15,68 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    const minLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return {
+      isValid: minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar,
+      minLength,
+      hasUpperCase,
+      hasLowerCase,
+      hasNumber,
+      hasSpecialChar,
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (formData.name.trim().length < 4) {
+      setError('Name must be at least 4 characters long');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      setError('Please enter a valid email address (e.g., user@example.com)');
+      return;
+    }
+
+    if (!formData.password) {
+      setError('Password is required');
+      return;
+    }
+
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      let errorMsg = 'Password must contain: ';
+      const missing = [];
+      if (!passwordValidation.minLength) missing.push('at least 8 characters');
+      if (!passwordValidation.hasUpperCase) missing.push('one uppercase letter');
+      if (!passwordValidation.hasLowerCase) missing.push('one lowercase letter');
+      if (!passwordValidation.hasNumber) missing.push('one number');
+      if (!passwordValidation.hasSpecialChar) missing.push('one special character');
+      errorMsg += missing.join(', ');
+      setError(errorMsg);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
@@ -86,7 +137,8 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="Enter your name"
+              placeholder="Minimum 4 characters"
+              minLength={4}
             />
           </div>
 
@@ -99,7 +151,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="user@example.com"
             />
           </div>
 
@@ -112,7 +164,8 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="At least 6 characters"
+              placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special char"
+              minLength={8}
             />
           </div>
 
