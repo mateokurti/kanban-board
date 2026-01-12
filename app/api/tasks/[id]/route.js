@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import dbConnect from '@/lib/db';
+import { sendTaskAssignmentEmail } from '@/lib/email';
 import Project from '@/lib/models/Project';
 import Task from '@/lib/models/Task';
 import Team from '@/lib/models/Team';
@@ -103,6 +104,8 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
+    const oldAssignedTo = task.assignedTo?.toString();
+
     const allowedFields = ['title', 'description', 'status', 'priority', 'scheduled'];
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {
@@ -110,8 +113,11 @@ export async function PUT(request, { params }) {
       }
     });
 
+    let assignmentChanged = false;
     if (body.assignedTo !== undefined) {
-      task.assignedTo = body.assignedTo || null;
+      const newAssignedTo = body.assignedTo || null;
+      assignmentChanged = oldAssignedTo !== newAssignedTo?.toString();
+      task.assignedTo = newAssignedTo;
     }
 
     if (body.teamId !== undefined) {
@@ -159,6 +165,35 @@ export async function PUT(request, { params }) {
     await task.save();
 
     await task.populate('assignedTo', 'name email');
+
+    if (assignmentChanged && task.assignedTo) {
+      try {
+        let projectName = null;
+        let teamName = null;
+
+        if (task.projectId) {
+          const project = await Project.findById(task.projectId);
+          projectName = project?.name;
+        }
+
+        if (task.teamId) {
+          const team = await Team.findById(task.teamId);
+          teamName = team?.name;
+        }
+
+        await sendTaskAssignmentEmail({
+          to: task.assignedTo.email,
+          taskTitle: task.title,
+          taskDescription: task.description,
+          assignedBy: session.user.name || session.user.email,
+          priority: task.priority,
+          projectName,
+          teamName,
+        });
+      } catch (emailError) {
+        console.error('Failed to send task assignment email:', emailError);
+      }
+    }
 
     return NextResponse.json({ task: serializeTask(task) }, { status: 200 });
   } catch (error) {

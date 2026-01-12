@@ -83,7 +83,6 @@ export async function PUT(request, { params }) {
       const resolved = await resolveTeamIds(teamIds, session.user.id);
       result.project.teamIds = resolved;
 
-      // Ensure tasks referencing this project have valid team assignment
       if (resolved.length > 0) {
         await Task.updateMany(
           {

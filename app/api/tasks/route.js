@@ -1,8 +1,10 @@
 import { requireAuth, canCreateTasks } from '@/lib/auth';
 import dbConnect from '@/lib/db';
+import { sendTaskAssignmentEmail } from '@/lib/email';
 import Project from '@/lib/models/Project';
 import Task from '@/lib/models/Task';
 import Team from '@/lib/models/Team';
+import User from '@/lib/models/User';
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 
@@ -164,6 +166,35 @@ export async function POST(request) {
     });
 
     await task.populate('assignedTo', 'name email');
+
+    if (task.assignedTo) {
+      try {
+        let projectName = null;
+        let teamName = null;
+
+        if (resolvedProjectId) {
+          const project = await Project.findById(resolvedProjectId);
+          projectName = project?.name;
+        }
+
+        if (resolvedTeamId) {
+          const team = await Team.findById(resolvedTeamId);
+          teamName = team?.name;
+        }
+
+        await sendTaskAssignmentEmail({
+          to: task.assignedTo.email,
+          taskTitle: task.title,
+          taskDescription: task.description,
+          assignedBy: session.user.name || session.user.email,
+          priority: task.priority,
+          projectName,
+          teamName,
+        });
+      } catch (emailError) {
+        console.error('Failed to send task assignment email:', emailError);
+      }
+    }
 
     return NextResponse.json({ task: serializeTask(task) }, { status: 201 });
   } catch (error) {
